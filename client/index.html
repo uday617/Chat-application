@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chat App - Login</title>
+  <link rel="stylesheet" href="styles/styles.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>Join Chat</h1>
+    <form id="loginForm" novalidate>
+      <input type="text" id="username" placeholder="Enter a username" required minlength="3" maxlength="20" pattern="^[a-zA-Z0-9_-]+$" />
+      <button type="submit">Join</button>
+    </form>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username');
+      const username = usernameInput.value.trim();
+      const valid = /^[a-zA-Z0-9_-]{3,20}$/.test(username);
+      if (!valid) {
+        alert('Username must be 3-20 characters and contain only letters, numbers, _ or -');
+        return;
+      }
+      localStorage.setItem('username', username);
+      window.location.href = 'chat.html';
+    });
+  </script>
+</body>
+</html>

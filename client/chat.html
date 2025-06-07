@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat Room</title>
+  <link rel="stylesheet" href="styles/styles.css" />
+  <style>
+    #imagePreview {
+      max-width: 100px;
+      max-height: 100px;
+      display: none;
+      margin-top: 5px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="chat-container">
+    <aside>
+      <h2>Rooms</h2>
+      <ul id="roomList"></ul>
+      <form id="createRoomForm">
+        <input type="text" id="newRoom" placeholder="New room name" minlength="3" maxlength="20"
+          pattern="^[a-zA-Z0-9_-]+$" required />
+        <button type="submit">Create</button>
+      </form>
+
+      <h3>Users in Room</h3>
+      <ul id="userList"></ul>
+
+      <!-- ✅ Logout Button -->
+      <button id="logoutBtn" style="margin-top: 10px; padding: 10px; background-color: #ff4757; color: white; border: none; border-radius: 4px; cursor: pointer;">
+        Logout
+      </button>
+    </aside>
+
+    <main>
+      <header style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="currentRoom">Select a Room</h2>
+        <button id="toggleTheme">Dark Mode</button>
+      </header>
+
+      <section id="messages"></section>
+
+      <form id="messageForm">
+        <input type="text" id="messageInput" placeholder="Type your message" autocomplete="off" />
+
+        <div class="emoji-picker-container">
+          <button type="button" id="emojiBtn" class="emoji-picker-button" title="Emoji Picker">😊</button>
+          <div id="emojiPicker" class="emoji-picker" aria-label="Emoji picker">
+            <!-- Emojis will be added via JavaScript -->
+          </div>
+        </div>
+
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+        <button type="button" id="imageBtn" title="Upload Image">📷</button>
+
+        <button type="submit">Send</button>
+      </form>
+
+      <img id="imagePreview" alt="Image preview" />
+    </main>
+  </div>
+
+  <script src="scripts/script.js"></script>
+  <script>
+    // Logout button logic
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('username');
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+
+</html>
