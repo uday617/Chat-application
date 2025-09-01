@@ -263,6 +263,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Logout functionality
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('username'); // clear login data
-  window.location.href = 'index.html'; // redirect to login page
+  localStorage.removeItem('username'); 
+  window.location.href = 'index.html'; 
 });

@@ -4,8 +4,8 @@ const http = require('http');
 const server = http.createServer();
 const wss = new WebSocket.Server({ server });
 
-let users = new Map(); // socket => { username, room }
-let rooms = new Map(); // room => Set of sockets
+let users = new Map(); 
+let rooms = new Map(); 
 
 // Utility: broadcast data to all in a room except optional socket
 function broadcastToRoom(room, data, exceptSocket = null) {
@@ -143,7 +143,7 @@ wss.on('connection', socket => {
           }
 
           if (hasImage) {
-            chatData.image = data.image;  // base64 image string
+            chatData.image = data.image;  
           }
 
           broadcastToRoom(user.room, chatData);
