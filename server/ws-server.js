@@ -14,8 +14,8 @@ app.get("/", (req, res) => {
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-let users = new Map(); // socket => { username, room }
-let rooms = new Map(); // room => Set of sockets
+let users = new Map(); 
+let rooms = new Map(); 
 
 function broadcastToRoom(room, data, exceptSocket = null) {
   if (!rooms.has(room)) return;
