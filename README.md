@@ -10,4 +10,5 @@ chat-app/
 ├── server/
 │   └── ws-server.js
 
-for check : https://chat-application-e2206.web.app/chat.html
+Hosting URL: https://chat-application-e2206.web.app
+
