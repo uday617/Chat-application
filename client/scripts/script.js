@@ -25,6 +25,15 @@ let rooms = [];
 
 const emojis = ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏'];
 
+// ✅ Safe send wrapper
+function safeSend(data) {
+  if (socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify(data));
+  } else {
+    console.warn("⚠️ WebSocket not open, skipping send.", data);
+  }
+}
+
 // Initialize emoji picker
 function initEmojiPicker() {
   emojiPicker.innerHTML = '';
@@ -77,7 +86,7 @@ imageInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-// Message send
+// ✅ Message send
 messageForm.addEventListener('submit', e => {
   e.preventDefault();
 
@@ -96,26 +105,26 @@ messageForm.addEventListener('submit', e => {
   }
 
   if (hasImage) {
-    socket.send(JSON.stringify({
+    safeSend({
       type: 'message',
       image: imagePreview.src
-    }));
+    });
     imagePreview.src = '';
     imagePreview.style.display = 'none';
   }
 
   if (hasText) {
-    socket.send(JSON.stringify({
+    safeSend({
       type: 'message',
       message: text
-    }));
+    });
     messageInput.value = '';
   }
 });
 
 // Socket handlers
 socket.addEventListener('open', () => {
-  socket.send(JSON.stringify({ type: 'init', username }));
+  safeSend({ type: 'init', username });
 });
 
 socket.addEventListener('message', event => {
@@ -155,7 +164,7 @@ function joinRoom(room) {
   currentRoom.textContent = room;
   messagesDiv.innerHTML = '';
   userList.innerHTML = '';
-  socket.send(JSON.stringify({ type: 'join', room }));
+  safeSend({ type: 'join', room });
 }
 
 function updateUserList(users) {
@@ -236,7 +245,7 @@ createRoomForm.addEventListener('submit', e => {
   if (rooms.includes(room)) {
     return alert('Room already exists! Please choose another name.');
   }
-  socket.send(JSON.stringify({ type: 'create', room }));
+  safeSend({ type: 'create', room });
   newRoomInput.value = '';
 });
 
@@ -261,8 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
     themeToggle.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
   });
 });
-// Logout functionality
+
+// Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  localStorage.removeItem('username'); 
-  window.location.href = 'index.html'; 
+  localStorage.removeItem('username');
+  window.location.href = 'index.html';
 });

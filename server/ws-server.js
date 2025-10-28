@@ -160,6 +160,14 @@ wss.on("connection", socket => {
   });
 });
 
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.ping();
+    }
+  });
+}, 25000);
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(` Server started on port ${PORT}`);
