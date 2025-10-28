@@ -3,7 +3,7 @@ if (!username) {
   window.location.href = 'index.html';
 }
 
-const socket = new WebSocket('ws://localhost:3000');
+const socket = new WebSocket('wss://chat-application-2-lqzg.onrender.com');
 
 const messagesDiv = document.getElementById('messages');
 const messageForm = document.getElementById('messageForm');
