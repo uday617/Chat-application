@@ -1,13 +1,22 @@
-const WebSocket = require('ws');
-const http = require('http');
+const express = require("express");
+const path = require("path");
+const http = require("http");
+const WebSocket = require("ws");
 
-const server = http.createServer();
+const app = express();
+app.use(express.static(path.join(__dirname, "../client")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/index.html"));
+});
+
+// Create HTTP + WebSocket server
+const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
-let users = new Map(); 
-let rooms = new Map(); 
+let users = new Map(); // socket => { username, room }
+let rooms = new Map(); // room => Set of sockets
 
-// Utility: broadcast data to all in a room except optional socket
 function broadcastToRoom(room, data, exceptSocket = null) {
   if (!rooms.has(room)) return;
   rooms.get(room).forEach(socket => {
@@ -17,17 +26,14 @@ function broadcastToRoom(room, data, exceptSocket = null) {
   });
 }
 
-// Get current time string for message timestamps
 function getCurrentTime() {
   return new Date().toLocaleTimeString();
 }
 
-// Send updated room list to a socket
 function sendRoomList(socket) {
   socket.send(JSON.stringify({ type: 'roomList', rooms: Array.from(rooms.keys()) }));
 }
 
-// Check if username is taken by any connected user
 function isUsernameTaken(username) {
   for (let user of users.values()) {
     if (user.username === username) return true;
@@ -35,32 +41,28 @@ function isUsernameTaken(username) {
   return false;
 }
 
-// Sanitize & format message content
 function formatMessage(text) {
   const escape = str => str.replace(/[&<>"']/g, ch => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[ch]));
-
   return escape(text)
     .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
     .replace(/\*(.*?)\*/g, '<i>$1</i>')
     .replace(/(https?:\/\/\S+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 }
 
-// Send user list for a room to all users in that room
 function broadcastUserList(room) {
   if (!rooms.has(room)) return;
   const userList = Array.from(rooms.get(room))
     .map(socket => users.get(socket)?.username)
     .filter(Boolean);
-
   broadcastToRoom(room, { type: 'userList', users: userList });
 }
 
-wss.on('connection', socket => {
+wss.on("connection", socket => {
   users.set(socket, { username: null, room: null });
 
-  socket.on('message', message => {
+  socket.on("message", message => {
     try {
       const data = JSON.parse(message);
       const user = users.get(socket);
@@ -86,7 +88,6 @@ wss.on('connection', socket => {
           }
           if (!rooms.has(data.room)) {
             rooms.set(data.room, new Set());
-            // Broadcast updated room list to all users
             wss.clients.forEach(client => {
               if (client.readyState === WebSocket.OPEN) {
                 sendRoomList(client);
@@ -100,22 +101,18 @@ wss.on('connection', socket => {
             socket.send(JSON.stringify({ type: 'error', message: 'Room does not exist' }));
             return;
           }
-          // Remove from previous room
           if (user.room && rooms.has(user.room)) {
             rooms.get(user.room).delete(socket);
             broadcastUserList(user.room);
           }
-          // Add to new room
           user.room = data.room;
           rooms.get(data.room).add(socket);
-
           socket.send(JSON.stringify({
             type: 'message',
             username: 'System',
             time: getCurrentTime(),
             message: `Joined room: ${data.room}`
           }));
-
           broadcastUserList(data.room);
           break;
 
@@ -126,7 +123,6 @@ wss.on('connection', socket => {
           }
           const hasText = data.message && typeof data.message === 'string' && data.message.trim() !== '';
           const hasImage = data.image && typeof data.image === 'string';
-
           if (!hasText && !hasImage) {
             socket.send(JSON.stringify({ type: 'error', message: 'Empty message' }));
             return;
@@ -137,21 +133,13 @@ wss.on('connection', socket => {
             username: user.username,
             time: getCurrentTime(),
           };
-
-          if (hasText) {
-            chatData.message = formatMessage(data.message);
-          }
-
-          if (hasImage) {
-            chatData.image = data.image;  
-          }
-
+          if (hasText) chatData.message = formatMessage(data.message);
+          if (hasImage) chatData.image = data.image;
           broadcastToRoom(user.room, chatData);
           break;
 
         default:
           socket.send(JSON.stringify({ type: 'error', message: 'Unknown message type' }));
-          break;
       }
 
     } catch (err) {
@@ -160,7 +148,7 @@ wss.on('connection', socket => {
     }
   });
 
-  socket.on('close', () => {
+  socket.on("close", () => {
     const user = users.get(socket);
     if (user) {
       if (user.room && rooms.has(user.room)) {
@@ -174,9 +162,5 @@ wss.on('connection', socket => {
 
 const PORT = 3000;
 server.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
-});
-
-wss.on('error', error => {
-  console.error('WebSocket error:', error);
+  console.log(`✅ Server started on http://localhost:${PORT}`);
 });
